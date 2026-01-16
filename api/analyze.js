@@ -1,3 +1,4 @@
+// Vercel Serverless Function for Run-Walk Analysis
 export default async function handler(req, res) {
   // Enable CORS
   res.setHeader('Access-Control-Allow-Credentials', true);
