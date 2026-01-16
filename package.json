@@ -1,0 +1,11 @@
+{
+  "name": "run-walk-analyzer",
+  "version": "1.0.0",
+  "description": "Analyze running pace graphs to calculate run-to-walk ratio",
+  "scripts": {
+    "dev": "vercel dev",
+    "deploy": "vercel"
+  },
+  "author": "Amer",
+  "license": "MIT"
+}
