@@ -1,238 +1,291 @@
-import React, { useState } from 'react';
-import { Upload, Activity, Clock, MapPin, TrendingUp } from 'lucide-react';
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Run-Walk Analyzer</title>
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body>
+  <div id="root"></div>
 
-export default function RunWalkAnalyzer() {
-  const [image, setImage] = useState(null);
-  const [imagePreview, setImagePreview] = useState(null);
-  const [analyzing, setAnalyzing] = useState(false);
-  const [results, setResults] = useState(null);
-  const [error, setError] = useState(null);
+  <script type="text/babel">
+    const { useState } = React;
 
-  const handleImageUpload = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setImage(file);
-      setError(null);
-      setResults(null);
-      
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result);
-      };
-      reader.readAsDataURL(file);
+    function Upload(props) {
+      return (
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+          <polyline points="17 8 12 3 7 8"></polyline>
+          <line x1="12" y1="3" x2="12" y2="15"></line>
+        </svg>
+      );
     }
-  };
 
-  const analyzeImage = async () => {
-    if (!image) return;
+    function Activity(props) {
+      return (
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+          <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+        </svg>
+      );
+    }
 
-    setAnalyzing(true);
-    setError(null);
+    function Clock(props) {
+      return (
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+          <circle cx="12" cy="12" r="10"></circle>
+          <polyline points="12 6 12 12 16 14"></polyline>
+        </svg>
+      );
+    }
 
-    try {
-      const reader = new FileReader();
-      reader.onloadend = async () => {
-        const base64Image = reader.result.split(',')[1];
-        
-        try {
-          // Call the serverless function
-          const response = await fetch('/api/analyze', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              image: base64Image
-            })
-          });
+    function MapPin(props) {
+      return (
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+          <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+          <circle cx="12" cy="10" r="3"></circle>
+        </svg>
+      );
+    }
 
-          const data = await response.json();
+    function TrendingUp(props) {
+      return (
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+          <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
+          <polyline points="17 6 23 6 23 12"></polyline>
+        </svg>
+      );
+    }
+
+    function RunWalkAnalyzer() {
+      const [image, setImage] = useState(null);
+      const [imagePreview, setImagePreview] = useState(null);
+      const [analyzing, setAnalyzing] = useState(false);
+      const [results, setResults] = useState(null);
+      const [error, setError] = useState(null);
+
+      const handleImageUpload = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+          setImage(file);
+          setError(null);
+          setResults(null);
           
-          if (!response.ok) {
-            console.error('API Error Response:', data);
-            throw new Error(data.error || 'Failed to analyze the image');
-          }
+          const reader = new FileReader();
+          reader.onloadend = () => {
+            setImagePreview(reader.result);
+          };
+          reader.readAsDataURL(file);
+        }
+      };
 
-          console.log('Success! Results:', data);
-          setResults(data);
+      const analyzeImage = async () => {
+        if (!image) return;
+
+        setAnalyzing(true);
+        setError(null);
+
+        try {
+          const reader = new FileReader();
+          reader.onloadend = async () => {
+            const base64Image = reader.result.split(',')[1];
+            
+            try {
+              const response = await fetch('/api/analyze', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                  image: base64Image
+                })
+              });
+
+              const data = await response.json();
+              
+              if (!response.ok) {
+                console.error('API Error Response:', data);
+                throw new Error(data.error || 'Failed to analyze the image');
+              }
+
+              console.log('Success! Results:', data);
+              setResults(data);
+            } catch (err) {
+              console.error('Analysis error:', err);
+              setError(err.message || 'Failed to analyze the image. Please try again.');
+            } finally {
+              setAnalyzing(false);
+            }
+          };
+          
+          reader.readAsDataURL(image);
         } catch (err) {
-          console.error('Analysis error:', err);
-          setError(err.message || 'Failed to analyze the image. Please try again.');
-        } finally {
+          console.error('File reading error:', err);
+          setError('Failed to read the image file');
           setAnalyzing(false);
         }
       };
-      
-      reader.readAsDataURL(image);
-    } catch (err) {
-      console.error('File reading error:', err);
-      setError('Failed to read the image file');
-      setAnalyzing(false);
-    }
-  };
 
-  const reset = () => {
-    setImage(null);
-    setImagePreview(null);
-    setResults(null);
-    setError(null);
-  };
+      const reset = () => {
+        setImage(null);
+        setImagePreview(null);
+        setResults(null);
+        setError(null);
+      };
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50">
-      <div className="max-w-4xl mx-auto px-6 py-12">
-        {/* Header */}
-        <div className="text-center mb-12">
-          <div className="flex items-center justify-center gap-3 mb-4">
-            <Activity className="w-10 h-10 text-blue-600" />
-            <h1 className="text-4xl font-bold text-gray-900">Run-Walk Analyzer</h1>
-          </div>
-          <p className="text-lg text-gray-600">Upload your pace graph and instantly discover your running rhythm</p>
-        </div>
+      return (
+        <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50">
+          <div className="max-w-4xl mx-auto px-6 py-12">
+            <div className="text-center mb-12">
+              <div className="flex items-center justify-center gap-3 mb-4">
+                <Activity className="w-10 h-10 text-blue-600" />
+                <h1 className="text-4xl font-bold text-gray-900">Run-Walk Analyzer</h1>
+              </div>
+              <p className="text-lg text-gray-600">Upload your pace graph and instantly discover your running rhythm</p>
+            </div>
 
-        {!results ? (
-          <div className="bg-white rounded-2xl shadow-lg p-8 border border-gray-100">
-            {/* Upload Section */}
-            {!imagePreview ? (
-              <label className="block cursor-pointer">
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleImageUpload}
-                  className="hidden"
-                />
-                <div className="border-3 border-dashed border-gray-300 rounded-2xl p-12 text-center hover:border-blue-400 transition-colors">
-                  <Upload className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                  <p className="text-xl font-medium text-gray-700 mb-2">
-                    Drop your pace graph here
-                  </p>
-                  <p className="text-sm text-gray-500">or click to browse</p>
-                  <p className="text-xs text-gray-400 mt-2">Supports Zepp Life (MI Band) pace graphs</p>
-                </div>
-              </label>
-            ) : (
-              <div>
-                <img
-                  src={imagePreview}
-                  alt="Pace graph preview"
-                  className="w-full rounded-xl mb-6 shadow-md"
-                />
-                
-                {error && (
-                  <div className="bg-red-50 border border-red-200 rounded-xl p-4 mb-6">
-                    <p className="text-red-800 text-sm">{error}</p>
+            {!results ? (
+              <div className="bg-white rounded-2xl shadow-lg p-8 border border-gray-100">
+                {!imagePreview ? (
+                  <label className="block cursor-pointer">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageUpload}
+                      className="hidden"
+                    />
+                    <div className="border-3 border-dashed border-gray-300 rounded-2xl p-12 text-center hover:border-blue-400 transition-colors">
+                      <Upload className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                      <p className="text-xl font-medium text-gray-700 mb-2">
+                        Drop your pace graph here
+                      </p>
+                      <p className="text-sm text-gray-500">or click to browse</p>
+                      <p className="text-xs text-gray-400 mt-2">Supports Zepp Life (MI Band) pace graphs</p>
+                    </div>
+                  </label>
+                ) : (
+                  <div>
+                    <img
+                      src={imagePreview}
+                      alt="Pace graph preview"
+                      className="w-full rounded-xl mb-6 shadow-md"
+                    />
+                    
+                    {error && (
+                      <div className="bg-red-50 border border-red-200 rounded-xl p-4 mb-6">
+                        <p className="text-red-800 text-sm">{error}</p>
+                      </div>
+                    )}
+
+                    <div className="flex gap-4">
+                      <button
+                        onClick={analyzeImage}
+                        disabled={analyzing}
+                        className="flex-1 bg-gradient-to-r from-blue-600 to-green-600 text-white py-4 rounded-xl font-semibold hover:from-blue-700 hover:to-green-700 transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {analyzing ? 'Analyzing your pace...' : 'Analyze My Run'}
+                      </button>
+                      <button
+                        onClick={reset}
+                        disabled={analyzing}
+                        className="px-6 py-4 border-2 border-gray-300 rounded-xl font-semibold text-gray-700 hover:bg-gray-50 transition-colors disabled:opacity-50"
+                      >
+                        Cancel
+                      </button>
+                    </div>
                   </div>
                 )}
-
-                <div className="flex gap-4">
-                  <button
-                    onClick={analyzeImage}
-                    disabled={analyzing}
-                    className="flex-1 bg-gradient-to-r from-blue-600 to-green-600 text-white py-4 rounded-xl font-semibold hover:from-blue-700 hover:to-green-700 transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {analyzing ? 'Analyzing your pace...' : 'Analyze My Run'}
-                  </button>
-                  <button
-                    onClick={reset}
-                    disabled={analyzing}
-                    className="px-6 py-4 border-2 border-gray-300 rounded-xl font-semibold text-gray-700 hover:bg-gray-50 transition-colors disabled:opacity-50"
-                  >
-                    Cancel
-                  </button>
+              </div>
+            ) : (
+              <div className="space-y-6">
+                <div className="bg-gradient-to-br from-blue-600 to-green-600 rounded-2xl shadow-xl p-12 text-center text-white">
+                  <h2 className="text-2xl font-medium mb-4 opacity-90">Your Run-Walk Ratio</h2>
+                  <div className="text-7xl font-bold mb-6">{results.ratio}</div>
+                  <div className="flex justify-center gap-8 text-lg">
+                    <div>
+                      <div className="text-4xl font-bold">{results.runningPercentage}%</div>
+                      <div className="opacity-90">Running</div>
+                    </div>
+                    <div className="border-l-2 border-white/30"></div>
+                    <div>
+                      <div className="text-4xl font-bold">{results.walkingPercentage}%</div>
+                      <div className="opacity-90">Walking</div>
+                    </div>
+                  </div>
                 </div>
+
+                <div className="bg-white rounded-2xl shadow-lg p-8 border border-gray-100">
+                  <h3 className="text-xl font-semibold text-gray-800 mb-6">Detailed Breakdown</h3>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="bg-blue-50 rounded-xl p-6 border border-blue-100">
+                      <div className="flex items-center gap-2 mb-4">
+                        <TrendingUp className="w-5 h-5 text-blue-600" />
+                        <h4 className="font-semibold text-blue-900">Running</h4>
+                      </div>
+                      <div className="space-y-3">
+                        <div className="flex items-center gap-2 text-gray-700">
+                          <Clock className="w-4 h-4 text-blue-600" />
+                          <span className="text-sm">Time:</span>
+                          <span className="font-semibold ml-auto">{results.runningTime}</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-gray-700">
+                          <MapPin className="w-4 h-4 text-blue-600" />
+                          <span className="text-sm">Distance:</span>
+                          <span className="font-semibold ml-auto">{results.runningDistance}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="bg-green-50 rounded-xl p-6 border border-green-100">
+                      <div className="flex items-center gap-2 mb-4">
+                        <Activity className="w-5 h-5 text-green-600" />
+                        <h4 className="font-semibold text-green-900">Walking</h4>
+                      </div>
+                      <div className="space-y-3">
+                        <div className="flex items-center gap-2 text-gray-700">
+                          <Clock className="w-4 h-4 text-green-600" />
+                          <span className="text-sm">Time:</span>
+                          <span className="font-semibold ml-auto">{results.walkingTime}</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-gray-700">
+                          <MapPin className="w-4 h-4 text-green-600" />
+                          <span className="text-sm">Distance:</span>
+                          <span className="font-semibold ml-auto">{results.walkingDistance}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="mt-6 pt-6 border-t border-gray-200">
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-gray-600">Detected Threshold Pace:</span>
+                      <span className="font-semibold text-gray-900">{results.thresholdPace}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <button
+                  onClick={reset}
+                  className="w-full py-4 border-2 border-gray-300 rounded-xl font-semibold text-gray-700 hover:bg-gray-50 transition-colors"
+                >
+                  Analyze Another Run
+                </button>
               </div>
             )}
-          </div>
-        ) : (
-          /* Results Section */
-          <div className="space-y-6">
-            {/* Primary Result - Ratio */}
-            <div className="bg-gradient-to-br from-blue-600 to-green-600 rounded-2xl shadow-xl p-12 text-center text-white">
-              <h2 className="text-2xl font-medium mb-4 opacity-90">Your Run-Walk Ratio</h2>
-              <div className="text-7xl font-bold mb-6">{results.ratio}</div>
-              <div className="flex justify-center gap-8 text-lg">
-                <div>
-                  <div className="text-4xl font-bold">{results.runningPercentage}%</div>
-                  <div className="opacity-90">Running</div>
-                </div>
-                <div className="border-l-2 border-white/30"></div>
-                <div>
-                  <div className="text-4xl font-bold">{results.walkingPercentage}%</div>
-                  <div className="opacity-90">Walking</div>
-                </div>
-              </div>
+
+            <div className="text-center mt-12 text-sm text-gray-500">
+              Built by Amer
             </div>
-
-            {/* Secondary Results - Details */}
-            <div className="bg-white rounded-2xl shadow-lg p-8 border border-gray-100">
-              <h3 className="text-xl font-semibold text-gray-800 mb-6">Detailed Breakdown</h3>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Running Stats */}
-                <div className="bg-blue-50 rounded-xl p-6 border border-blue-100">
-                  <div className="flex items-center gap-2 mb-4">
-                    <TrendingUp className="w-5 h-5 text-blue-600" />
-                    <h4 className="font-semibold text-blue-900">Running</h4>
-                  </div>
-                  <div className="space-y-3">
-                    <div className="flex items-center gap-2 text-gray-700">
-                      <Clock className="w-4 h-4 text-blue-600" />
-                      <span className="text-sm">Time:</span>
-                      <span className="font-semibold ml-auto">{results.runningTime}</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-gray-700">
-                      <MapPin className="w-4 h-4 text-blue-600" />
-                      <span className="text-sm">Distance:</span>
-                      <span className="font-semibold ml-auto">{results.runningDistance}</span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Walking Stats */}
-                <div className="bg-green-50 rounded-xl p-6 border border-green-100">
-                  <div className="flex items-center gap-2 mb-4">
-                    <Activity className="w-5 h-5 text-green-600" />
-                    <h4 className="font-semibold text-green-900">Walking</h4>
-                  </div>
-                  <div className="space-y-3">
-                    <div className="flex items-center gap-2 text-gray-700">
-                      <Clock className="w-4 h-4 text-green-600" />
-                      <span className="text-sm">Time:</span>
-                      <span className="font-semibold ml-auto">{results.walkingTime}</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-gray-700">
-                      <MapPin className="w-4 h-4 text-green-600" />
-                      <span className="text-sm">Distance:</span>
-                      <span className="font-semibold ml-auto">{results.walkingDistance}</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Threshold */}
-              <div className="mt-6 pt-6 border-t border-gray-200">
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-gray-600">Detected Threshold Pace:</span>
-                  <span className="font-semibold text-gray-900">{results.thresholdPace}</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Analyze Another Button */}
-            <button
-              onClick={reset}
-              className="w-full py-4 border-2 border-gray-300 rounded-xl font-semibold text-gray-700 hover:bg-gray-50 transition-colors"
-            >
-              Analyze Another Run
-            </button>
           </div>
-        )}
-
-        {/* Footer Credit */}
-        <div className="text-center mt-12 text-sm text-gray-500">
-          Built by Amer
         </div>
-      </div>
-    </div>
-  );
-}
+      );
+    }
+
+    ReactDOM.render(<RunWalkAnalyzer />, document.getElementById('root'));
+  </script>
+</body>
+</html>
