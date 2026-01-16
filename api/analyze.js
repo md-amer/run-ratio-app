@@ -92,6 +92,7 @@ Respond with ONLY this JSON structure (no other text):
 
     const resultText = data.candidates[0].content.parts[0].text;
     console.log('Raw Gemini response:', resultText);
+    console.log('Response length:', resultText.length);
     
     let cleanedText = resultText.trim();
     
@@ -105,8 +106,16 @@ Respond with ONLY this JSON structure (no other text):
     }
     
     console.log('Cleaned text:', cleanedText);
+    console.log('First 100 chars:', cleanedText.substring(0, 100));
     
-    const parsedResults = JSON.parse(cleanedText);
+    let parsedResults;
+    try {
+      parsedResults = JSON.parse(cleanedText);
+    } catch (parseError) {
+      console.error('JSON parse error:', parseError);
+      console.error('Attempted to parse:', cleanedText);
+      throw new Error(`Failed to parse Gemini response as JSON. Response: ${cleanedText.substring(0, 200)}`);
+    }
     
     return res.status(200).json(parsedResults);
   } catch (error) {
