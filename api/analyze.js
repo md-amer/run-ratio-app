@@ -1,4 +1,7 @@
-// Vercel Serverless Function for Run-Walk Analysis
+try {
+    console.log('Starting Gemini API call...');
+    
+    const response = await fetch(// Vercel Serverless Function for Run-Walk Analysis
 export default async function handler(req, res) {
   // Enable CORS
   res.setHeader('Access-Control-Allow-Credentials', true);
@@ -43,15 +46,17 @@ export default async function handler(req, res) {
           contents: [{
             parts: [
               {
-                text: `Analyze this running pace graph from Zepp Life (MI Band). 
+                text: `You are a pace graph analyzer. Analyze this running pace graph from Zepp Life (MI Band).
 
-Your task:
+CRITICAL: You must respond with ONLY a valid JSON object. No explanatory text before or after. No markdown. Just pure JSON.
+
+Tasks:
 1. Extract all pace data points from the graph (time vs pace)
 2. Intelligently determine the threshold pace that separates running from walking by analyzing the distribution of pace values (look for bimodal distribution or natural clustering)
 3. Calculate the run-to-walk ratio
-4. Provide total running time, walking time, running distance, and walking distance
+4. Calculate total running time, walking time, running distance, and walking distance
 
-Respond in this EXACT JSON format with no markdown formatting:
+Respond with ONLY this JSON structure (no other text):
 {
   "ratio": "3:1",
   "runningPercentage": 75,
@@ -86,8 +91,20 @@ Respond in this EXACT JSON format with no markdown formatting:
     }
 
     const resultText = data.candidates[0].content.parts[0].text;
+    console.log('Raw Gemini response:', resultText);
+    
     let cleanedText = resultText.trim();
+    
+    // Remove markdown code blocks
     cleanedText = cleanedText.replace(/```json\n?/g, '').replace(/```\n?/g, '');
+    
+    // Try to extract JSON if it's embedded in text
+    const jsonMatch = cleanedText.match(/\{[\s\S]*\}/);
+    if (jsonMatch) {
+      cleanedText = jsonMatch[0];
+    }
+    
+    console.log('Cleaned text:', cleanedText);
     
     const parsedResults = JSON.parse(cleanedText);
     
